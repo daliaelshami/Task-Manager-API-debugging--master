@@ -41,7 +41,7 @@ describe("taskController", () => {
       expect(Task.create).not.toHaveBeenCalled();
     });
 
-    test("should create a task and respond with 200 and payload", async () => {
+    test("should create a task and respond with 201 and payload", async () => {
       const req = { body: { title: "Write tests" } };
       const res = mockRes();
       const created = { _id: "t1", title: "Write tests" };
@@ -51,13 +51,13 @@ describe("taskController", () => {
       await flushPromises();
 
       expect(Task.create).toHaveBeenCalledWith({ title: "Write tests" });
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({ msg: "Task Created", data: created });
     });
   });
 
   describe("getTasks", () => {
-    test("should return 201 with empty list when no tasks", async () => {
+    test("should return 200 with empty list when no tasks", async () => {
       const req = {};
       const res = mockRes();
       Task.find.mockResolvedValue([]);
@@ -82,7 +82,7 @@ describe("taskController", () => {
       getTasks(req, res);
       await flushPromises();
 
-      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ msg: "Tasks List", data: tasks });
     });
   });

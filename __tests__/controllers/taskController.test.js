@@ -13,28 +13,26 @@ jest.mock("../../models/Task", () => ({
 
 const Task = require("../../models/Task");
 
-// Helper to flush pending microtasks for controllers that use Promise.then without returning it
-const flushPromises = () => new Promise(process.nextTick);
-
 const mockRes = () => {
   const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
+  res.status = jest.fn(() => res);
+  res.json = jest.fn(() => res);
   return res;
 };
 
 describe("taskController", () => {
+  let res;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    res = mockRes();
   });
 
   describe("createTask", () => {
     test("should return 400 when title is missing and not call Task.create", async () => {
       const req = { body: {} };
-      const res = mockRes();
 
-      createTask(req, res);
-      await flushPromises();
+      await createTask(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ msg: "Title is required" });
@@ -43,12 +41,10 @@ describe("taskController", () => {
 
     test("should create a task and respond with 201 and payload", async () => {
       const req = { body: { title: "Write tests" } };
-      const res = mockRes();
       const created = { _id: "t1", title: "Write tests" };
       Task.create.mockResolvedValue(created);
 
-      createTask(req, res);
-      await flushPromises();
+      await createTask(req, res);
 
       expect(Task.create).toHaveBeenCalledWith({ title: "Write tests" });
       expect(res.status).toHaveBeenCalledWith(201);
@@ -59,11 +55,9 @@ describe("taskController", () => {
   describe("getTasks", () => {
     test("should return 200 with empty list when no tasks", async () => {
       const req = {};
-      const res = mockRes();
       Task.find.mockResolvedValue([]);
 
-      getTasks(req, res);
-      await flushPromises();
+      await getTasks(req, res);
 
       expect(Task.find).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(200);
@@ -72,15 +66,13 @@ describe("taskController", () => {
 
     test("should return 200 with tasks list", async () => {
       const req = {};
-      const res = mockRes();
       const tasks = [
         { _id: "1", title: "A" },
         { _id: "2", title: "B" },
       ];
       Task.find.mockResolvedValue(tasks);
 
-      getTasks(req, res);
-      await flushPromises();
+      await getTasks(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ msg: "Tasks List", data: tasks });
@@ -90,7 +82,6 @@ describe("taskController", () => {
   describe("createTaskWithCheck", () => {
     test("should return 400 when task already exists and not create a new one", async () => {
       const req = { body: { title: "Duplicate" } };
-      const res = mockRes();
       Task.findOne.mockResolvedValue({ _id: "e1", title: "Duplicate" });
 
       await createTaskWithCheck(req, res);
@@ -103,7 +94,6 @@ describe("taskController", () => {
 
     test("should create and return 201 when task does not exist", async () => {
       const req = { body: { title: "New Task" } };
-      const res = mockRes();
       Task.findOne.mockResolvedValue(null);
       const created = { _id: "nt1", title: "New Task" };
       Task.create.mockResolvedValue(created);
@@ -118,13 +108,11 @@ describe("taskController", () => {
 
     test("should query using provided title field", async () => {
       const req = { body: { title: "Check Title" } };
-      const res = mockRes();
       Task.findOne.mockResolvedValue(null);
       Task.create.mockResolvedValue({ _id: "x", title: "Check Title" });
 
       await createTaskWithCheck(req, res);
 
-      // verify correct filter shape is used
       expect(Task.findOne).toHaveBeenCalledWith({ title: "Check Title" });
     });
   });

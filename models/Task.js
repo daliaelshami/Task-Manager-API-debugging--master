@@ -4,10 +4,11 @@ const taskSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    trim: true
   },
   isCompleted: {
     type: Boolean,
-    default: false,
+    default: false
   },
 });
 // Bug: String in isCompleted should be Boolean

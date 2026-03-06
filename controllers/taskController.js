@@ -1,7 +1,5 @@
 const Task = require("../models/Task");
 
-
-
 // Bug: The function was using .then() which can lead to nested callbacks, and it lacked error handling (no .catch).
 // Fix: Refactored to use async/await with a try/catch block for better error management.
 exports.createTask = async (req, res) => {
@@ -9,6 +7,8 @@ exports.createTask = async (req, res) => {
   if (!title) return res.status(400).json({ msg: "Title is required" });
 
   try {
+    const exist = await Task.findOne({ title });
+    if (exist) return res.status(400).json({ msg: "Task already exists" });
     // Bug: Success status code was 200.
     // Fix: Changed to 201 to follow REST best practices for creating a resource.
     const task = await Task.create({ title });

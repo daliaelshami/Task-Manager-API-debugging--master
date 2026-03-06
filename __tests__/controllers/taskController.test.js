@@ -57,7 +57,7 @@ describe("taskController", () => {
   });
 
   describe("getTasks", () => {
-    test("should return 200 with empty list when no tasks", async () => {
+    test("should return 201 with empty list when no tasks", async () => {
       const req = {};
       const res = mockRes();
       Task.find.mockResolvedValue([]);
@@ -82,7 +82,7 @@ describe("taskController", () => {
       getTasks(req, res);
       await flushPromises();
 
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({ msg: "Tasks List", data: tasks });
     });
   });
